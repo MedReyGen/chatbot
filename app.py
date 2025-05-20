@@ -22,7 +22,7 @@ client = genai.Client(
 def generate_response():
     # Get user query from request
     data = request.json
-    user_query = data.get('query', '')
+    user_query = data.get('query', [])
     
     if not user_query:
         return jsonify({"error": "No query provided"}), 400
@@ -30,14 +30,47 @@ def generate_response():
     si_text1 = """anda adalah asisten virtual dalam memberikan informasi, saran medis awal, dan panduan lanjutan kepada pengguna untuk penyakit pernafasan seperti pneumonia, tuberkulosis (TBC), dan COVID-19. tidak bisa menjawab penyakit lainnya."""
 
     model = "gemini-2.5-pro-preview-05-06"
-    contents = [
-        types.Content(
-            role="user",
-            parts=[
-                types.Part.from_text(text=user_query)
-            ]
-        ),
-    ]
+
+    contents = ''
+
+    # for message in user_query:
+    #     role = message.get("role", "user")
+    #     content = message.get("content", "")
+    #     contents.append(types.Content(
+    #         role=role,
+    #         parts=[types.Part.from_text(text=content)]
+    #     ))
+    # contents = [
+    #     types.Content(
+    #         role="user",
+    #         parts=[
+    #             types.Part.from_text(text=user_query)
+    #         ]
+    #     ),
+    # ]
+
+    # If already have context (chat history)
+    if isinstance(user_query, list) and all(isinstance(m, dict) and "content" in m for m in user_query):
+        contents = []
+        for message in user_query:
+            role = message.get("role", "user")
+            content = message.get("content", "")
+            contents.append(types.Content(
+                role=role,
+                parts=[types.Part.from_text(text=content)]
+            ))
+
+    # If first prompt come
+    elif isinstance(user_query, str):
+        contents = [
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=user_query)]
+            )
+        ]
+
+    else:
+        return jsonify({"error": "Invalid query format: must be a string or list of dicts with 'role' and 'content'"}), 400
 
     generate_content_config = types.GenerateContentConfig(
         temperature=1,
