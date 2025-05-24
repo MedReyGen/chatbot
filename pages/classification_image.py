@@ -17,18 +17,26 @@ Asisten ini dapat klasifikasi gambar X-Ray apakah termasuk ke dalam penyakit per
 file = st.file_uploader('Upload gambar JPEG, JPG, atau PNG', type=['jpeg', 'jpg', 'png'])
 
 # Load file .h5
-with h5py.File('./model/pneumonia_classifier.h5', 'r') as f:
-    model_config = f.attrs.get('model_config')
-    model_config = json.loads(model_config)
+# with h5py.File('./model/x_ray_classifier.h5', 'r') as f:
+#     model_config = f.attrs.get('model_config')
+#     model_config = json.loads(model_config)
 
 # Edit config: delete 'groups' from DepthwiseConv2D layers
-for layer in model_config['config']['layers']:
-    if layer['class_name'] == 'DepthwiseConv2D':
-        layer['config'].pop('groups', None)
+    # for layer in model_config['config']['layers']:
+    #     if layer['class_name'] == 'DepthwiseConv2D':
+    #         layer['config'].pop('groups', None)
+    #         layer['config'].pop('batch_shape', None)
+    #     elif layer['class_name'] == 'InputLayer':
+    #         layer['config'].pop('batch_shape', None)
 
 # Bangun model baru dari config yang sudah diperbaiki
 # Read model after repairing the config
-model = model_from_json(json.dumps(model_config))
+# model = model_from_json(json.dumps(model_config))
+
+# Load weights karena ga langsung load_model()
+# with h5py.File('./model/x_ray_classifier.h5', 'r') as f:
+#     model.load_weights(f)
+model = load_model('./model/x_ray_classifier.h5')
 
 # Load class names
 with open('./model/labels.txt', 'r') as f:
@@ -53,62 +61,72 @@ if file is not None:
     
     if "has_classified" not in st.session_state:
         st.session_state.has_classified = False
-
-    if "pending_user_prompt" not in st.session_state:
-        st.session_state.pending_user_prompt = None
-
-    if "pending_assistant_response" not in st.session_state:
-        st.session_state.pending_assistant_response = None
+    
+    if "last_prompt" not in st.session_state:
+        st.session_state.last_prompt = None
+    
+    if "chat_input_buffer" not in st.session_state:
+        st.session_state.chat_input_buffer = None
+    
+    # Show conversation
+    st.divider()
+    st.write("### 🩺 Asisten Medis")
 
     if not st.session_state.has_classified:
         first_prompt = ""
 
         if(class_name_result.lower() == "normal"):
             first_prompt = "Saat ini hasil X-Ray ku normal. Apa yang harus kulakukan untuk menjaga kesehatan pernafasanku agar terhindar dari penyakit TBC, pneumonia, atau pun COVID-19?"
-        elif(class_name_result.lower() in ["pneumonia", "covid-19", "tbc"]):
+        elif(class_name_result.lower() in ["pneumonia", "covid", "tbc"]):
             first_prompt = f"Jelaskan mengenai penyakit {class_name_result}"
         else:
             first_prompt = "Jelaskan penyakit TBC, Covid-19, dan Pneumonia secara singkat"
 
-        # Show conversation
-        st.divider()
-        st.write("### 🩺 Asisten Medis")
-
         st.session_state.classification_messages.append({"role": "user", "content": first_prompt})
 
-        with st.chat_message("user"):
-            st.markdown(first_prompt)
+        # with st.chat_message("user"):
+        #     st.markdown(first_prompt)
 
-        with st.chat_message("assistant"):
-            with st.spinner("Memikirkan jawaban"):
-                assistant_response = call_chatbot(first_prompt)
-                st.markdown(assistant_response)
-                st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
+        # with st.chat_message("assistant"):
+        with st.spinner("Memikirkan jawaban"):
+            assistant_response = call_chatbot(first_prompt)
+        st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
         
         st.session_state.has_classified = True
     
-    if st.session_state.has_classified:
-        st.divider()
-        st.write("### 🩺 Asisten Medis")
+    for i, message in enumerate(st.session_state.classification_messages):
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-        prompt = st.chat_input("Tanyakan sesuatu lebih lanjut")
+    prompt = st.chat_input("Tanyakan sesuatu lebih lanjut")
 
-        # Render semua pesan sebelumnya, kecuali user prompt terakhir (kalau baru saja diketik)
-        for i, message in enumerate(st.session_state.classification_messages):
-            # Jika user baru saja input prompt, skip render user terakhir (supaya gak dobel)
-            if prompt and i == len(st.session_state.classification_messages) - 1 and message["role"] == "user":
-                continue
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    if prompt and  prompt != st.session_state.last_prompt:
+        st.session_state.last_prompt = prompt
+        # prompt = st.session_state.chat_input_buffer
 
-        if prompt:
-            new_message = {"role": "user", "content": prompt}
-            st.session_state.classification_messages.append(new_message)
-            with st.chat_message("user"):
-                st.markdown(prompt)
+        # if st.session_state.get("last_prompt") != prompt:
+        #     st.session_state.last_prompt = prompt
+        #     new_message = {"role": "user", "content": prompt}
+        #     st.session_state.classification_messages.append(new_message)
+        #     with st.chat_message("user"):
+        #         st.markdown(prompt)
             
-            with st.chat_message("assistant"):
-                with st.spinner("Memikirkan jawaban"):
-                    assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
-                    st.markdown(assistant_response)
-                    st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
+        #     with st.chat_message("assistant"):
+        #         with st.spinner("Memikirkan jawaban"):
+        #             assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
+        #             st.markdown(assistant_response)
+        #     st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
+        
+        with st.chat_message("user"):
+            st.markdown(prompt)
+            
+        with st.chat_message("assistant"):
+            with st.spinner("Memikirkan jawaban"):
+                assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
+                st.markdown(assistant_response)
+        st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
+        # st.session_state.chat_input_buffer = None
+
+        # print(st.session_state.classification_messages)
+        # print()
+        # print()

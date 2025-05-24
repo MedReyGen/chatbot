@@ -4,27 +4,27 @@ import streamlit as st
 from PIL import ImageOps, Image
 import numpy as np
 
+from tensorflow.keras.preprocessing import image
+
 import requests
 
-def classify(image, model, class_names):
+def classify(image_imported, model, class_names):
     """test"""
     # Convert image to (224, 224)
-    image_converted = ImageOps.fit(image, (224, 224), Image.Resampling.LANCZOS)
+    image_converted = ImageOps.fit(image_imported, (224, 224), Image.Resampling.LANCZOS)
 
-    # Convert image to numpy array
-    image_array = np.asarray(image_converted)
+     # Convert image to numpy array
+    image_array = image.img_to_array(image_converted)
 
     # Normalize image supaya rentang nilainya 0 hingga 1 karena gambar dinilai RGB
-    normalize_image_array = (image_array.astype(np.float32) / 127.5) - 1
+    normalize_image_array = image_array / 255.0
 
     # Set model input
-    # This means 1 image with 224,224 size and 3 channels of color
-    data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
-    data[0] = normalize_image_array
+    data = np.expand_dims(normalize_image_array, axis=0)
 
     # Make prediction
     prediction_result = model.predict(data)
-    index = np.argmax(prediction_result)
+    index = np.argmax(prediction_result, axis=1)[0]
     class_name = class_names[index]
     confidence_score = prediction_result[0][index]
 
