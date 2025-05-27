@@ -16,32 +16,23 @@ Asisten ini dapat klasifikasi gambar X-Ray apakah termasuk ke dalam penyakit per
 # Upload file
 file = st.file_uploader('Upload gambar JPEG, JPG, atau PNG', type=['jpeg', 'jpg', 'png'])
 
-# Load file .h5
-# with h5py.File('./model/x_ray_classifier.h5', 'r') as f:
-#     model_config = f.attrs.get('model_config')
-#     model_config = json.loads(model_config)
+if "uploaded_filename" not in st.session_state:
+    st.session_state.uploaded_filename = None
 
-# Edit config: delete 'groups' from DepthwiseConv2D layers
-    # for layer in model_config['config']['layers']:
-    #     if layer['class_name'] == 'DepthwiseConv2D':
-    #         layer['config'].pop('groups', None)
-    #         layer['config'].pop('batch_shape', None)
-    #     elif layer['class_name'] == 'InputLayer':
-    #         layer['config'].pop('batch_shape', None)
+if file is not None:
+    if file.name != st.session_state.uploaded_filename:
+        st.session_state.clear()
+        st.session_state.uploaded_filename = file.name
 
-# Bangun model baru dari config yang sudah diperbaiki
-# Read model after repairing the config
-# model = model_from_json(json.dumps(model_config))
+@st.cache_resource
+def load_assets():
+    model = load_model('./model/x_ray_classifier.h5')
 
-# Load weights karena ga langsung load_model()
-# with h5py.File('./model/x_ray_classifier.h5', 'r') as f:
-#     model.load_weights(f)
-model = load_model('./model/x_ray_classifier.h5')
+    with open('./model/labels.txt', 'r') as f:
+        class_names = [a.strip().split(' ')[1] for a in f.readlines()]
+    return model, class_names
 
-# Load class names
-with open('./model/labels.txt', 'r') as f:
-    class_names = [a[:-1].split(' ')[1] for a in f.readlines()]
-    f.close()
+model, class_names = load_assets()
 
 # Display image
 if file is not None:
@@ -64,9 +55,12 @@ if file is not None:
     
     if "last_prompt" not in st.session_state:
         st.session_state.last_prompt = None
+
+    if "has_rendered_first_prompt" not in st.session_state:
+        st.session_state.has_rendered_first_prompt = False
     
-    if "chat_input_buffer" not in st.session_state:
-        st.session_state.chat_input_buffer = None
+    # if "chat_input_buffer" not in st.session_state:
+    #     st.session_state.chat_input_buffer = None
     
     # Show conversation
     st.divider()
@@ -84,19 +78,22 @@ if file is not None:
 
         st.session_state.classification_messages.append({"role": "user", "content": first_prompt})
 
-        # with st.chat_message("user"):
-        #     st.markdown(first_prompt)
+        with st.chat_message("user"):
+            st.markdown(first_prompt)
 
-        # with st.chat_message("assistant"):
-        with st.spinner("Memikirkan jawaban"):
-            assistant_response = call_chatbot(first_prompt)
+        with st.chat_message("assistant"):
+            with st.spinner("Memikirkan jawaban"):
+                assistant_response = call_chatbot(first_prompt)
+                st.markdown(assistant_response)
         st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
         
         st.session_state.has_classified = True
+        st.session_state.has_rendered_first_prompt = True
     
-    for i, message in enumerate(st.session_state.classification_messages):
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    else:
+        for i, message in enumerate(st.session_state.classification_messages):
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
     prompt = st.chat_input("Tanyakan sesuatu lebih lanjut")
 
