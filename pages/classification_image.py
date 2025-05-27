@@ -72,7 +72,7 @@ if file is not None:
         if(class_name_result.lower() == "normal"):
             first_prompt = "Saat ini hasil X-Ray ku normal. Apa yang harus kulakukan untuk menjaga kesehatan pernafasanku agar terhindar dari penyakit TBC, pneumonia, atau pun COVID-19?"
         elif(class_name_result.lower() in ["pneumonia", "covid", "tbc"]):
-            first_prompt = f"Jelaskan mengenai penyakit {class_name_result}"
+            first_prompt = f"Jelaskan mengenai penyakit {class_name_result} dan bagaimana cara menanganinya?"
         else:
             first_prompt = "Jelaskan penyakit TBC, Covid-19, dan Pneumonia secara singkat"
 
@@ -114,16 +114,21 @@ if file is not None:
         #             st.markdown(assistant_response)
         #     st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
         
+        # st.session_state.classification_messages.append({"role": "user", "content": prompt})
+
         with st.chat_message("user"):
             st.markdown(prompt)
+        
+        st.session_state.classification_messages.append({"role": "user", "content": prompt})
             
         with st.chat_message("assistant"):
             with st.spinner("Memikirkan jawaban"):
                 assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
                 st.markdown(assistant_response)
+
         st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
         # st.session_state.chat_input_buffer = None
 
-        # print(st.session_state.classification_messages)
-        # print()
+        print(st.session_state.classification_messages)
+        print()
         # print()

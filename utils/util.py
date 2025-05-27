@@ -33,7 +33,8 @@ def classify(image_imported, model, class_names):
 def call_chatbot(message, context=None):
     BACKEND_URL = "http://localhost:5000/generate"
     try:
-        full_context = context if context else []
+        # ini harus dibuat .copy() supaya full_context ga mengganggu context asli
+        full_context = context.copy() if context else []
         full_context.append({
             "role": "user",
             "content": message
