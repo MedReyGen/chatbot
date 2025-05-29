@@ -1,0 +1,5 @@
+0 Covid
+1 None
+2 Normal
+3 Pneumonia
+4 Tbc
