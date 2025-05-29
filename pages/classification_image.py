@@ -19,24 +19,42 @@ file = st.file_uploader('Upload gambar JPEG, JPG, atau PNG', type=['jpeg', 'jpg'
 if "uploaded_filename" not in st.session_state:
     st.session_state.uploaded_filename = None
 
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None
+
 if file is not None:
     if file.name != st.session_state.uploaded_filename:
-        st.session_state.clear()
+        # st.session_state.clear()
+        for key in [
+            "classification_messages",
+            "has_classified",
+            "last_prompt", 
+            "has_rendered_first_prompt", 
+            "uploaded_filename", 
+            "uploaded_file"
+        ]:
+            st.session_state.pop(key, None)
         st.session_state.uploaded_filename = file.name
+        st.session_state.uploaded_file = file
+# else:
+#     st.session_state.uploaded_filename = None
+#     st.session_state.uploaded_file = None
 
 @st.cache_resource
 def load_assets():
-    model = load_model('./model/x_ray_classifier.h5')
+    model = load_model('./model/x_ray_classifier_with_negative_data.h5')
 
-    with open('./model/labels.txt', 'r') as f:
+    with open('./model/labels_with_negative_data.txt', 'r') as f:
         class_names = [a.strip().split(' ')[1] for a in f.readlines()]
     return model, class_names
 
 model, class_names = load_assets()
 
+image_file = file if file is not None else st.session_state.uploaded_file
+
 # Display image
-if file is not None:
-    image = Image.open(file).convert('RGB')
+if file is not None or image_file is not None:
+    image = Image.open(file if file is not None else image_file).convert('RGB')
     st.image(image, use_container_width=True)
 
     # Classify image
@@ -72,7 +90,7 @@ if file is not None:
         if(class_name_result.lower() == "normal"):
             first_prompt = "Saat ini hasil X-Ray ku normal. Apa yang harus kulakukan untuk menjaga kesehatan pernafasanku agar terhindar dari penyakit TBC, pneumonia, atau pun COVID-19?"
         elif(class_name_result.lower() in ["pneumonia", "covid", "tbc"]):
-            first_prompt = f"Jelaskan mengenai penyakit {class_name_result} dan bagaimana cara menanganinya?"
+            first_prompt = f"Jelaskan mengenai penyakit {class_name_result} secara singkat dan bagaimana cara menanganinya?"
         else:
             first_prompt = "Jelaskan penyakit TBC, Covid-19, dan Pneumonia secara singkat"
 

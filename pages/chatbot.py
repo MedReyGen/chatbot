@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 import json
 
+from utils.util import call_chatbot
+
 st.title("MedReyGen 🫁")
 st.subheader("Asisten Medis untuk Penyakit Pernapasan")
 st.markdown("""
@@ -35,22 +37,9 @@ if prompt:
     # Show assistant response with a spinner while loading
     with st.chat_message("assistant"):
         with st.spinner("Memikirkan jawaban..."):
-            try:
-                response = requests.post(
-                    BACKEND_URL,
-                    json={"query": prompt},
-                    headers={"Content-Type": "application/json"}
-                )
-                response.raise_for_status()  # Raise exception for HTTP errors
-                
-                response_data = response.json()
-                assistant_response = response_data.get("response", "Maaf, terjadi kesalahan.")
-                
-                # Display the response
-                st.markdown(assistant_response)
-                
-                # Add assistant response to chat history
-                st.session_state.messages.append({"role": "assistant", "content": assistant_response})
-            
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
+            assistant_response = call_chatbot(prompt, st.session_state.messages)
+            st.markdown(assistant_response)
+    
+    st.session_state.messages.append(
+        {"role": "assistant", "content": assistant_response}
+    )
