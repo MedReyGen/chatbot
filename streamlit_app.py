@@ -13,9 +13,15 @@ chatbot_page = st.Page(
     icon=":material/chat:"
 )
 
-pg = st.navigation([chatbot_image_classification, chatbot_page])
+about_page = st.Page(
+    page="pages/about.py",
+    title="Tentang",
+    icon=":material/info:"
+)
+
+pg = st.navigation([chatbot_image_classification, chatbot_page, about_page])
 
 st.logo("assets/laskar_ai_logo.png")
-st.sidebar.text("Made with ❤️ by Grouper")
+st.sidebar.text("Made with ❤️ by Team AiR")
 
 pg.run()
