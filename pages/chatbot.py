@@ -15,6 +15,9 @@ lanjutan mengenai penyakit pernapasan seperti pneumonia, tuberkulosis (TBC), dan
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "last_prompt_for_chatbot_only" not in st.session_state:
+    st.session_state.last_prompt_for_chatbot_only = None
+
 # Display chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -26,7 +29,9 @@ prompt = st.chat_input("Tanyakan sesuatu tentang penyakit pernapasan...")
 # Backend URL
 BACKEND_URL = "http://localhost:5000/generate"
 
-if prompt:
+if prompt and prompt != st.session_state.last_prompt_for_chatbot_only:
+    st.session_state.last_prompt_for_chatbot_only = prompt
+
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     
@@ -35,10 +40,16 @@ if prompt:
         st.markdown(prompt)
     
     # Show assistant response with a spinner while loading
+    # with st.chat_message("assistant"):
+    #     with st.spinner("Memikirkan jawaban..."):
+    #         assistant_response = call_chatbot(prompt, st.session_state.messages)
+    #         st.markdown(assistant_response)
+
     with st.chat_message("assistant"):
-        with st.spinner("Memikirkan jawaban..."):
+        placeholder = st.empty()
+        with st.spinner("Memikirkan jawaban"):
             assistant_response = call_chatbot(prompt, st.session_state.messages)
-            st.markdown(assistant_response)
+        placeholder.markdown(assistant_response)
     
     st.session_state.messages.append(
         {"role": "assistant", "content": assistant_response}

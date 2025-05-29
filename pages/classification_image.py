@@ -99,10 +99,17 @@ if file is not None or image_file is not None:
         with st.chat_message("user"):
             st.markdown(first_prompt)
 
+        # with st.chat_message("assistant"):
+        #     with st.spinner("Memikirkan jawaban"):
+        #         assistant_response = call_chatbot(first_prompt)
+        #         st.markdown(assistant_response)
+
         with st.chat_message("assistant"):
+            placeholder = st.empty()
             with st.spinner("Memikirkan jawaban"):
                 assistant_response = call_chatbot(first_prompt)
-                st.markdown(assistant_response)
+            placeholder.markdown(assistant_response)
+        
         st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
         
         st.session_state.has_classified = True
@@ -139,10 +146,16 @@ if file is not None or image_file is not None:
         
         st.session_state.classification_messages.append({"role": "user", "content": prompt})
             
+        # with st.chat_message("assistant"):
+        #     with st.spinner("Memikirkan jawaban"):
+        #         assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
+        #     st.markdown(assistant_response)
+
         with st.chat_message("assistant"):
+            placeholder = st.empty()
             with st.spinner("Memikirkan jawaban"):
                 assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
-                st.markdown(assistant_response)
+            placeholder.markdown(assistant_response)
 
         st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
         # st.session_state.chat_input_buffer = None
