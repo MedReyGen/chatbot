@@ -4,7 +4,7 @@ st.title("Tentang Kami")
 st.markdown("""
 ### 💬 Siapa Kami?
 
-**Team AiR** adalah tim yang terdiri dari empat anggota (2 perempuan & 2 laki-laki) yang memiliki minat besar dalam pengembangan solusi teknologi berbasis **AI untuk kesehatan**, khususnya di bidang **pernapasan**.
+**Team AiR** adalah tim yang terdiri dari empat anggota yang memiliki minat besar dalam pengembangan solusi teknologi berbasis **AI untuk kesehatan**, khususnya di bidang **pernapasan**.
 
 Kami membangun **MedReyGen**, sebuah aplikasi pintar yang menggabungkan teknologi **Machine Learning** dan **chatbot medis** untuk membantu pengguna memahami kondisi paru-paru mereka dan mendapatkan informasi terpercaya mengenai penyakit terkait.
 """)
@@ -42,10 +42,10 @@ st.markdown("""
 
 ### 👥 Tim Kami
 
-- 👩 **Icha Aulia Putri Ambarwati** 
-- 👨 **Ja'far Shodiq** 
+- 👩 **Icha Aulia Putri Ambarwati**
 - 👩 **Margaretha Gok Asi Naibaho** 
-- 👨 **Moh Dani Kurniawan Sugiarto** 
+- 👨 **Ja'far Shodiq**
+- 👨 **Moh Dani Kurniawan Sugiarto**
 
 > *Kami percaya bahwa teknologi terbaik adalah teknologi yang mampu menjangkau dan membantu banyak orang.*
 
