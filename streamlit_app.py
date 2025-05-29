@@ -15,7 +15,7 @@ chatbot_page = st.Page(
 
 about_page = st.Page(
     page="pages/about.py",
-    title="Tentang",
+    title="Tentang Kami",
     icon=":material/info:"
 )
 
