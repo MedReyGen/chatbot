@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import time
 
 from utils.util import call_chatbot
 
@@ -45,12 +46,38 @@ if prompt and prompt != st.session_state.last_prompt_for_chatbot_only:
     #         assistant_response = call_chatbot(prompt, st.session_state.messages)
     #         st.markdown(assistant_response)
 
+    # with st.chat_message("assistant"):
+    #     placeholder = st.empty()
+    #     with st.spinner("Memikirkan jawaban"):
+    #         assistant_response = call_chatbot(prompt, st.session_state.messages)
+    #     placeholder.markdown(assistant_response)
+
+    # with st.chat_message("assistant"):
+    #     placeholder = st.empty()
+    #     with st.spinner("Memikirkan jawaban..."):
+    #         response_text = ""
+    #         for partial in call_chatbot(prompt, st.session_state.messages):
+    #             response_text = partial
+    #             placeholder.markdown(response_text)
+
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        with st.spinner("Memikirkan jawaban"):
-            assistant_response = call_chatbot(prompt, st.session_state.messages)
-        placeholder.markdown(assistant_response)
-    
+        stream = call_chatbot(prompt, st.session_state.messages)
+
+        try:
+            with st.spinner("Memikirkan jawaban..."):
+                first_chunk = next(stream)
+        except StopIteration:
+            first_chunk = ""
+        
+        response_text = first_chunk
+        placeholder.markdown(response_text)
+
+        for partial in stream:
+            response_text = partial
+            placeholder.markdown(response_text)
+            time.sleep(0.005)
+
     st.session_state.messages.append(
-        {"role": "assistant", "content": assistant_response}
+        {"role": "assistant", "content": response_text}
     )

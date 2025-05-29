@@ -1,9 +1,9 @@
 import streamlit as st
 from keras.models import load_model
-from keras.models import model_from_json
 import h5py
 import json
 from PIL import Image
+import time
 
 from utils.util import classify, call_chatbot
 
@@ -106,11 +106,23 @@ if file is not None or image_file is not None:
 
         with st.chat_message("assistant"):
             placeholder = st.empty()
-            with st.spinner("Memikirkan jawaban"):
-                assistant_response = call_chatbot(first_prompt)
-            placeholder.markdown(assistant_response)
+            stream = call_chatbot(first_prompt)
+
+            try:
+                with st.spinner("Memikirkan jawaban..."):
+                    first_chunk = next(stream)
+            except StopIteration:
+                first_chunk = ""
+            
+            response_text = first_chunk
+            placeholder.markdown(response_text)
+
+            for partial in stream:
+                response_text = partial
+                placeholder.markdown(response_text)
+                time.sleep(0.005)
         
-        st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
+        st.session_state.classification_messages.append({"role": "assistant", "content": response_text})
         
         st.session_state.has_classified = True
         st.session_state.has_rendered_first_prompt = True
@@ -153,11 +165,23 @@ if file is not None or image_file is not None:
 
         with st.chat_message("assistant"):
             placeholder = st.empty()
-            with st.spinner("Memikirkan jawaban"):
-                assistant_response = call_chatbot(prompt, st.session_state.classification_messages)
-            placeholder.markdown(assistant_response)
+            stream = call_chatbot(prompt, st.session_state.classification_messages)
 
-        st.session_state.classification_messages.append({"role": "assistant", "content": assistant_response})
+            try:
+                with st.spinner("Memikirkan jawaban..."):
+                    first_chunk = next(stream)
+            except StopIteration:
+                first_chunk = ""
+            
+            response_text = first_chunk
+            placeholder.markdown(response_text)
+
+            for partial in stream:
+                response_text = partial
+                placeholder.markdown(response_text)
+                time.sleep(0.005)
+
+        st.session_state.classification_messages.append({"role": "assistant", "content": response_text})
         # st.session_state.chat_input_buffer = None
 
         print(st.session_state.classification_messages)

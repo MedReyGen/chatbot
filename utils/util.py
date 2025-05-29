@@ -31,22 +31,27 @@ def classify(image_imported, model, class_names):
     return class_name, confidence_score
 
 def call_chatbot(message, context=None):
-    BACKEND_URL = "http://localhost:5000/generate"
-    try:
-        # ini harus dibuat .copy() supaya full_context ga mengganggu context asli
-        full_context = context.copy() if context else []
-        full_context.append({
-            "role": "user",
-            "content": message
-        })
-        response = requests.post(
-            BACKEND_URL,
-            json={"query": full_context},
-            headers={"Content-Type": "application/json"}
-        )
+    BACKEND_STREAM_URL = "http://localhost:5000/generate-stream"
 
-        response.raise_for_status()
-        return response.json().get("response", "Maaf, tidak ada respon mengenai hal ini")
-    
+    full_context = context.copy() if context else []
+    full_context.append({"role": "user", "content": message})
+
+    try:
+        resp = requests.post(
+            BACKEND_STREAM_URL,
+            json={"query": full_context},
+            headers={"Content-Type": "application/json"},
+            stream=True
+        )
+        resp.raise_for_status()
+
+        buffer = ""
+        for chunk in resp.iter_content(chunk_size=None):
+            if not chunk:
+                continue
+            text = chunk.decode("utf-8")
+            buffer += text
+            yield buffer
+
     except Exception as e:
-        return f"Error: {str(e)}"
+        yield f"Error: {str(e)}"
