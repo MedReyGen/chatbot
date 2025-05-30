@@ -7,6 +7,10 @@ import numpy as np
 from tensorflow.keras.preprocessing import image
 
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def classify(image_imported, model, class_names):
     """test"""
@@ -31,7 +35,7 @@ def classify(image_imported, model, class_names):
     return class_name, confidence_score
 
 def call_chatbot(message, context=None):
-    BACKEND_STREAM_URL = "http://localhost:5000/generate-stream"
+    BACKEND_STREAM_URL = os.getenv("BACKEND_URL")
 
     full_context = context.copy() if context else []
     full_context.append({"role": "user", "content": message})
