@@ -63,14 +63,31 @@ if file is not None or image_file is not None:
     percent = round(conf_score * 100)
 
     # Write classification result
-    st.write("### Hasil klasifikasi X-Ray adalah {}".format(class_name_result))
+    # st.write("### Hasil klasifikasi X-Ray adalah {}".format(class_name_result))
 
     if class_name_result.lower() == 'normal' or class_name_result.lower() == 'none':
-        result_text = f"Gambar terdeteksi <b>{percent}%</b> <span style='color:green; font-weight: 700;'>tidak menunjukkan indikasi penyakit pernapasan</span>."
+        result_text = f"""
+            <div style='font-size: 20px;'>
+                Berdasarkan analisis sistem, terdapat <b style='color:green; font-weight: 600; font-size: 28px;'>{percent}% kemungkinan</b> hasil X-Ray Anda <span style='color:green; font-weight: 600; font-size: 28px;'><b>normal</b></span>.
+            </div>
+        """
     else:
-        result_text = f"Gambar terdeteksi <b>{percent}%</b> <span style='color:red; font-weight: 700;'>terjangkit penyakit {class_name_result.upper()}</span>."
+        result_text = f"""
+            <div style='font-size: 20px;'>
+                Berdasarkan analisis sistem, terdapat <b style='color:red; font-weight: 600; font-size: 28px;'>{percent}% kemungkinan</b> gambar X-Ray Anda memiliki ciri-ciri yang menyerupai
+                <span style='color:red; font-weight: 600; font-size: 28px;'><b>{class_name_result.upper()}</b></span>.
+            </div>
+        """
     
-    st.markdown(f"<div style='font-size:20px;'>{result_text}</div>", unsafe_allow_html=True)
+    st.markdown(result_text, unsafe_allow_html=True)
+
+    st.markdown(
+        "<div style='font-size:16px; color:gray;'>"
+            "Catatan: Analisis ini dilakukan oleh sistem AI berdasarkan gambar X-Ray, dan <b>bukan merupakan diagnosis medis</b>. "
+            "Silakan konsultasikan lebih lanjut dengan tenaga medis profesional."
+        "</div>",
+        unsafe_allow_html=True
+    )
 
     # Initialize chat history
     if "classification_messages" not in st.session_state:
