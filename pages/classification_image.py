@@ -60,9 +60,17 @@ if file is not None or image_file is not None:
     # Classify image
     class_name_result, conf_score = classify(image, model, class_names)
 
+    percent = round(conf_score * 100)
+
     # Write classification result
     st.write("### Hasil klasifikasi X-Ray adalah {}".format(class_name_result))
-    st.write("Confidence score model {}".format(conf_score))
+
+    if class_name_result.lower() == 'normal' or class_name_result.lower() == 'none':
+        result_text = f"Gambar terdeteksi <b>{percent}%</b> <span style='color:green; font-weight: 700;'>tidak menunjukkan indikasi penyakit pernapasan</span>."
+    else:
+        result_text = f"Gambar terdeteksi <b>{percent}%</b> <span style='color:red; font-weight: 700;'>terjangkit penyakit {class_name_result.upper()}</span>."
+    
+    st.markdown(f"<div style='font-size:20px;'>{result_text}</div>", unsafe_allow_html=True)
 
     # Initialize chat history
     if "classification_messages" not in st.session_state:
