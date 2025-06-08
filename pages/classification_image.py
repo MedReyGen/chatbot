@@ -65,17 +65,29 @@ if file is not None or image_file is not None:
     # Write classification result
     # st.write("### Hasil klasifikasi X-Ray adalah {}".format(class_name_result))
 
-    if class_name_result.lower() == 'normal' or class_name_result.lower() == 'none':
+    if class_name_result.lower() == 'normal':
         result_text = f"""
             <div style='font-size: 20px;'>
                 Berdasarkan analisis sistem, terdapat <b style='color:green; font-weight: 600; font-size: 28px;'>{percent}% kemungkinan</b> hasil X-Ray Anda <span style='color:green; font-weight: 600; font-size: 28px;'><b>normal</b></span>.
             </div>
         """
-    else:
+    elif class_name_result.lower() == 'none':
+        result_text = f"""
+            <div style='font-size: 20px;'>
+                Berdasarkan analisis sistem, <b style='color:red; font-weight: 600; font-size: 28px;'>{percent}% kemungkinan gambar yang Anda upload bukan X-Rey dada.</b>
+            </div>
+        """
+    elif class_name_result.lower() in ['tbc', 'covid', 'pneumonia']:
         result_text = f"""
             <div style='font-size: 20px;'>
                 Berdasarkan analisis sistem, terdapat <b style='color:red; font-weight: 600; font-size: 28px;'>{percent}% kemungkinan</b> gambar X-Ray Anda memiliki ciri-ciri yang menyerupai
                 <span style='color:red; font-weight: 600; font-size: 28px;'><b>{class_name_result.upper()}</b></span>.
+            </div>
+        """
+    else:
+        result_text = f"""
+            <div style='font-size: 20px;'>
+                Maaf, terdapat kesalahan pada sistem. Silahkan coba beberapa saat kemudian.
             </div>
         """
     
